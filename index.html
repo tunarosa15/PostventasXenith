@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Postventas · Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --sw:248px;--bg:#eef2fb;--card:#fff;--border:#e6eaf2;
+  --n1:#0B1E3A;--n2:#0F2A52;
+  --b1:#1a6cf6;--b2:#3d8bff;--b3:#6aaeff;--b4:#b3d4ff;
+  --g:#22c55e;--r:#ef4444;--am:#f59e0b;
+  --t1:#1a2340;--t2:#5a6a8a;--t3:#8fa3c8;
+  --sh:0 2px 16px rgba(26,108,246,.08);--shh:0 8px 32px rgba(26,108,246,.16);
+  --rad:14px;--rads:8px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100vw;height:100vh;overflow:hidden;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--t1)}
+#app{display:flex;width:100vw;height:100vh;overflow:hidden}
+
+#sb{width:var(--sw);min-width:var(--sw);height:100vh;display:flex;flex-direction:column;background:linear-gradient(160deg,var(--n1),var(--n2));overflow:hidden;z-index:10}
+.sb-logo{padding:24px 20px 16px;display:flex;align-items:center;gap:11px;animation:fy 3s ease-in-out infinite}
+@keyframes fy{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.sb-logo-ic{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--b1),var(--b3));display:flex;align-items:center;justify-content:center;font-size:17px;box-shadow:0 4px 12px rgba(26,108,246,.4)}
+.sb-logo-t{color:#fff}.sb-logo-t span{display:block;font-size:13px;font-weight:800;letter-spacing:.02em}
+.sb-logo-t small{font-size:10px;font-weight:400;color:rgba(255,255,255,.4);letter-spacing:.08em;text-transform:uppercase}
+.sb-sec{padding:8px 16px 4px;font-size:9px;font-weight:600;color:rgba(255,255,255,.3);letter-spacing:.12em;text-transform:uppercase}
+.sb-nav{flex:1;padding:4px 0;overflow:hidden}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 14px 10px 18px;margin:2px 8px;border-radius:9px;cursor:pointer;position:relative;color:rgba(255,255,255,.5);font-size:12.5px;font-weight:600;transition:all .2s}
+.sb-item::before{content:'';position:absolute;left:0;top:20%;height:60%;width:3px;border-radius:0 3px 3px 0;background:var(--b2);transform:scaleY(0);transition:transform .2s}
+.sb-item.act{background:rgba(255,255,255,.1);color:#fff}.sb-item.act::before{transform:scaleY(1)}
+.sb-item:hover:not(.act){background:rgba(255,255,255,.06);color:rgba(255,255,255,.8)}
+.sb-item .ic{font-size:15px;width:19px;text-align:center}
+.sb-bot{padding:14px 12px}
+.sb-raw{width:100%;padding:10px;border-radius:9px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(255,255,255,.6);font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.sb-raw:hover{background:rgba(255,255,255,.1);color:#fff}
+
+#main{flex:1;height:100vh;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+#topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px 0;flex-shrink:0}
+.pg-title{font-size:19px;font-weight:400}.pg-title strong{font-weight:800}
+.view-label{font-size:11px;font-weight:600;color:var(--t3);background:var(--card);border:1px solid var(--border);padding:4px 12px;border-radius:20px}
+.mpills{display:flex;gap:5px}
+.mp{padding:5px 13px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--card);color:var(--t2);transition:all .18s}
+.mp.act{background:var(--b1);border-color:var(--b1);color:#fff;box-shadow:0 2px 10px rgba(26,108,246,.3)}
+.mp:hover:not(.act){border-color:var(--b3);color:var(--b1)}
+
+#fbar{display:flex;align-items:center;gap:10px;padding:10px 24px 0;flex-shrink:0;flex-wrap:wrap}
+.fl{font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.07em}
+.cs{position:relative;display:inline-block}
+.cs select{appearance:none;-webkit-appearance:none;padding:6px 28px 6px 12px;border-radius:var(--rads);border:1.5px solid var(--border);background:var(--card);font-family:inherit;font-size:11.5px;font-weight:600;color:var(--t1);cursor:pointer;outline:none;transition:border-color .18s;box-shadow:var(--sh)}
+.cs select:focus,.cs select:hover{border-color:var(--b3)}
+.cs select:disabled{opacity:.45;cursor:default}
+.cs::after{content:'▾';position:absolute;right:9px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--t3);pointer-events:none}
+.clear-btn{font-size:11px;font-weight:600;color:var(--t3);background:none;border:1.5px solid var(--border);padding:5px 12px;border-radius:20px;cursor:pointer;font-family:inherit;transition:all .18s;margin-left:auto}
+.clear-btn:hover{color:var(--b1);border-color:var(--b1)}
+
+#content{flex:1;padding:10px 24px 14px;display:flex;flex-direction:column;gap:10px;overflow:hidden;min-height:0}
+
+#krow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;flex-shrink:0}
+.kc{background:linear-gradient(135deg,#f0f6ff,#e6f0ff);border:1px solid var(--border);border-radius:var(--rad);padding:14px 16px;position:relative;overflow:hidden;box-shadow:var(--sh);cursor:default;transition:transform .2s,box-shadow .2s;opacity:0;transform:scale(.94)}
+.kc.rdy{opacity:1;transform:none}
+.kc:hover{transform:translateY(-3px);box-shadow:var(--shh)}
+.kc-ic{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;animation:fy 3s ease-in-out infinite}
+.kc-lbl{font-size:10px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
+.kc-val{font-size:24px;font-weight:800;color:var(--t1);letter-spacing:-.02em;margin-bottom:3px}
+.kc-ctx{font-size:10.5px;color:var(--t3);margin-bottom:5px}
+.kc-delta{display:inline-flex;align-items:center;gap:3px;font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:20px}
+.dup{background:#dcfce7;color:#16a34a}.ddn{background:#fee2e2;color:#dc2626}.dne{background:#f1f5f9;color:var(--t2)}
+.kc-bar-bg{height:3px;background:rgba(26,108,246,.12);border-radius:2px;margin-top:8px;overflow:hidden}
+.kc-bar-f{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--b1),var(--b3));transition:width .8s cubic-bezier(.4,0,.2,1)}
+
+#crow{flex:1;display:flex;gap:10px;min-height:0}
+.cc{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:14px 16px;box-shadow:var(--sh);display:flex;flex-direction:column;min-height:0;transition:box-shadow .2s;opacity:0}
+.cc.rdy{opacity:1}
+.cc:hover{box-shadow:var(--shh)}
+.cc-main{flex:1.8;min-width:0}
+.cc-right{display:flex;flex-direction:column;gap:10px;flex:1;min-width:0;min-height:0}
+.cc-sm{flex:1;min-height:0}
+.ch{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;flex-shrink:0}
+.ct{font-size:12.5px;font-weight:700;color:var(--t1)}.cs2{font-size:10.5px;color:var(--t3)}
+.cw{flex:1;position:relative;min-height:0}.cw canvas{position:absolute;inset:0}
+
+#brow{display:grid;grid-template-columns:58% 42%;gap:10px;flex-shrink:0}
+.tc{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:12px 16px;box-shadow:var(--sh);overflow:hidden}
+.dt{width:100%;border-collapse:collapse;font-size:11px}
+.dt th{font-size:9.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;padding:0 7px 6px;text-align:left;border-bottom:1px solid var(--border)}
+.dt td{padding:6px 7px;border-bottom:1px solid #f4f6fb;color:var(--t1);vertical-align:middle}
+.dt tr:last-child td{border-bottom:none}
+.dt tr.crit td{background:#fff8f8}
+.dt tr:hover td{background:#f7f9ff}
+.dt tr.crit:hover td{background:#fff0f0}
+.dt th.sort-asc::after{content:' ↑';color:var(--b1)}.dt th.sort-desc::after{content:' ↓';color:var(--b1)}
+.dt th.sortable{cursor:pointer;user-select:none}.dt th.sortable:hover{color:var(--b1)}
+.sp{display:inline-block;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:20px}
+.sg{background:#dcfce7;color:#16a34a}.sr{background:#fee2e2;color:#dc2626}.sa{background:#fef3c7;color:#b45309}.sn{background:#f1f5f9;color:var(--t2)}
+.mb{height:4px;background:#eef2fb;border-radius:2px;overflow:hidden;width:52px;display:inline-block;vertical-align:middle;margin-left:5px}
+.mb-f{height:100%;border-radius:2px}
+
+.sc{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:12px 16px;box-shadow:var(--sh)}
+.sg4{display:grid;grid-template-columns:1fr 1fr;gap:8px;height:calc(100% - 28px)}
+.sb2{border-radius:9px;padding:10px 12px;border:1px solid var(--border)}
+.sb2-g{background:linear-gradient(135deg,#f0fdf4,#dcfce7)}
+.sb2-b{background:linear-gradient(135deg,#f0f6ff,#e6f0ff)}
+.sb2-a{background:linear-gradient(135deg,#fffbeb,#fef3c7)}
+.sb2-r{background:linear-gradient(135deg,#fff5f5,#fee2e2)}
+.sbv{font-size:19px;font-weight:800;color:var(--t1);letter-spacing:-.02em}
+.sbl{font-size:9.5px;font-weight:600;color:var(--t2);margin-top:1px;text-transform:uppercase;letter-spacing:.06em}
+.sbs{font-size:10px;font-weight:600;margin-top:4px}
+.sb2-g .sbs{color:#16a34a}.sb2-b .sbs{color:var(--b1)}.sb2-a .sbs{color:#b45309}.sb2-r .sbs{color:#dc2626}
+
+/* COORDINATORS VIEW */
+.coord-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:4px}
+.coord-card{background:linear-gradient(135deg,#f0f6ff,#e6f0ff);border:1px solid var(--border);border-radius:var(--rads);padding:12px 14px}
+.coord-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--b1),var(--b3));color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+.coord-name{font-size:12px;font-weight:700;color:var(--t1);margin-bottom:2px}
+.coord-meta{font-size:10.5px;color:var(--t2)}
+.coord-pct{font-size:20px;font-weight:800;margin-top:6px}
+
+#raw-modal{display:none;position:fixed;inset:0;z-index:100;background:rgba(11,30,58,.7);align-items:center;justify-content:center}
+#raw-modal.open{display:flex}
+.rm-box{background:var(--card);border-radius:var(--rad);width:92vw;max-width:1100px;height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.3)}
+.rm-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0}
+.rm-title{font-size:15px;font-weight:700}.rm-sub{font-size:11px;color:var(--t3);margin-top:2px}
+.rm-close{font-size:20px;cursor:pointer;color:var(--t3);background:none;border:none;font-family:inherit;line-height:1}
+.rm-close:hover{color:var(--t1)}
+.rm-body{flex:1;overflow:auto;padding:16px 20px}
+.rm-table{width:100%;border-collapse:collapse;font-size:11px}
+.rm-table th{position:sticky;top:0;background:#f8faff;font-size:9.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;padding:7px 10px;text-align:left;border-bottom:2px solid var(--border);white-space:nowrap}
+.rm-table td{padding:6px 10px;border-bottom:1px solid #f4f6fb;color:var(--t1);white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+.rm-table tr:hover td{background:#f7f9ff}
+.pl{display:inline-block;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px}
+.rm-foot{padding:12px 20px;border-top:1px solid var(--border);font-size:11px;color:var(--t3);flex-shrink:0}
+
+.pl-wrap{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.pl-row{display:flex;flex-direction:column;gap:3px}
+.pl-hd{display:flex;justify-content:space-between;font-size:11px}
+.pl-nm{font-weight:600;color:var(--t1)}.pl-vl{font-weight:700;color:var(--b1)}
+.pb{height:6px;background:#eef2fb;border-radius:3px;overflow:hidden}
+.pb-f{height:100%;border-radius:3px;width:0;transition:width .8s cubic-bezier(.4,0,.2,1)}
+</style>
+</head>
+<body>
+<div id="app">
+<div id="sb">
+  <div class="sb-logo">
+    <div class="sb-logo-ic">📊</div>
+    <div class="sb-logo-t"><span>Postventas</span><small>Analytics Hub</small></div>
+  </div>
+  <div class="sb-sec">Vistas</div>
+  <nav class="sb-nav" id="sbnav">
+    <div class="sb-item act" data-view="overview"><span class="ic">🏠</span> Resumen General</div>
+    <div class="sb-item" data-view="projects"><span class="ic">🏗️</span> Por Proyecto</div>
+    <div class="sb-item" data-view="tickets"><span class="ic">🎫</span> Tickets Abiertos</div>
+    <div class="sb-item" data-view="coordinators"><span class="ic">👤</span> Coordinadores</div>
+    <div class="sb-item" data-view="trends"><span class="ic">📈</span> Tendencias</div>
+  </nav>
+  <div class="sb-bot">
+    <button class="sb-raw" id="rawBtn">📋 &nbsp;Ver Datos Raw</button>
+  </div>
+</div>
+
+<div id="main">
+  <div id="topbar">
+    <div class="pg-title">Dashboard <strong>Postventas</strong></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="view-label" id="viewLabel">Resumen General</span>
+      <div class="mpills" id="mpills">
+        <div class="mp act" data-m="all">Todo</div>
+        <div class="mp" data-m="2025-12">Dic 25</div>
+        <div class="mp" data-m="2026-01">Ene 26</div>
+        <div class="mp" data-m="2026-02">Feb 26</div>
+        <div class="mp" data-m="2026-03">Mar 26</div>
+        <div class="mp" data-m="2026-04">Abr 26</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="fbar">
+    <span class="fl">Filtrar</span>
+    <div class="cs"><select id="fProj">
+      <option value="all">Todos los proyectos</option>
+            <option value="Flagami Pines">Flagami Pines</option>
+      <option value="Gardens">Gardens</option>
+      <option value="Sovereign Homes">Sovereign Homes</option>
+      <option value="Vista to the Plaza">Vista to the Plaza</option>
+    </select></div>
+    <div class="cs"><select id="fStatus">
+      <option value="all">Todos los estados</option>
+      <option value="Completed">Completados</option>
+      <option value="In-progress">Abiertos</option>
+    </select></div>
+    <div class="cs"><select id="fCoord">
+      <option value="all">Todos los coordinadores</option>
+            <option value="Camilo Pinzon">Camilo Pinzon</option>
+      <option value="Santiago Gardeazabal">Santiago Gardeazabal</option>
+    </select></div>
+    <button class="clear-btn" id="clearBtn">✕ Limpiar filtros</button>
+    <span style="font-size:11px;color:var(--t3);margin-left:4px" id="recordCount">203 registros</span>
+  </div>
+
+  <div id="content">
+    <div id="krow"></div>
+    <div id="crow">
+      <div class="cc cc-main" id="ccMain">
+        <div class="ch"><div><div class="ct" id="chartMainTitle">Tickets por Mes y Proyecto</div><div class="cs2">Volumen mensual acumulado</div></div></div>
+        <div class="cw"><canvas id="barChart"></canvas></div>
+      </div>
+      <div class="cc-right">
+        <div class="cc cc-sm" id="ccDonut">
+          <div class="ch"><div class="ct">Cumplimiento</div><div class="cs2">por proyecto</div></div>
+          <div class="cw"><canvas id="donutChart"></canvas></div>
+        </div>
+        <div class="cc cc-sm" id="ccProg">
+          <div class="ch"><div class="ct">Intentos de Cierre</div></div>
+          <div class="pl-wrap" id="progList"></div>
+        </div>
+      </div>
+    </div>
+    <div id="brow">
+      <div class="tc">
+        <div class="ch" style="margin-bottom:6px">
+          <div class="ct" id="tableTitle">Tickets Abiertos</div>
+          <div class="cs2" id="tableCount">—</div>
+        </div>
+        <table class="dt">
+          <thead><tr>
+            <th>ID</th><th>Proyecto</th><th>Coordinador</th><th>Descripción</th>
+            <th class="sortable" data-col="days" style="text-align:center">Días ↕</th>
+            <th>Estado</th><th>Avance</th>
+          </tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+      <div class="sc">
+        <div class="ch" style="margin-bottom:8px"><div class="ct">Métricas Clave</div></div>
+        <div class="sg4" id="summaryGrid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div id="raw-modal">
+  <div class="rm-box">
+    <div class="rm-head">
+      <div><div class="rm-title">Datos Raw — Seguimiento Postventas</div><div class="rm-sub" id="rawSub">203 registros</div></div>
+      <button class="rm-close" id="rawClose">✕</button>
+    </div>
+    <div class="rm-body"><table class="rm-table" id="rawTable"></table></div>
+    <div class="rm-foot" id="rawFoot">Datos al 9 de abril de 2026</div>
+  </div>
+</div>
+
+<script>
+var RAW_DATA = [{"id":"1830653","date":"2025-12-18","month":"2025-12","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":60.0,"cumpl":"Cumplido","desc":"Aplicar gravilla post inspeccion","serviceType":"Final Homeowner Walkthrough","priority":"Medium","date2":""},{"id":"1830654","date":"2025-12-18","month":"2025-12","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":56.0,"cumpl":"Cumplido","desc":"Poner molsh","serviceType":"Final Homeowner Walkthrough","priority":"Medium","date2":""},{"id":"1832377","date":"2025-12-19","month":"2025-12","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":55.0,"cumpl":"Cumplido","desc":"Poner molsch","serviceType":"Final Homeowner Walkthrough","priority":"Medium","date2":""},{"id":"1832378","date":"2025-12-19","month":"2025-12","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":55.0,"cumpl":"Cumplido","desc":"Remover arboles","serviceType":"Final Homeowner Walkthrough","priority":"Medium","date2":""},{"id":"1832379","date":"2025-12-19","month":"2025-12","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":55.0,"cumpl":"Cumplido","desc":"Numeros y buzon","serviceType":"Final Homeowner Walkthrough","priority":"Medium","date2":""},{"id":"1832381","date":"2025-12-19","month":"2025-12","project":"Flagami Pines","status":"In-progress","coordinator":"Santiago Gardeazabal","res1":"","res2":"","res3":"","days":111.0,"cumpl":"Atrasado","desc":"Remover arboles","serviceType":"Final Homeowner Walkthrough","priority":"Medium","date2":"2026-04-14"},{"id":"1832385","date":"2025-12-19","month":"2025-12","project":"Flagami Pines","status":"In-progress","coordinator":"Santiago Gardeazabal","res1":"","res2":"","res3":"","days":111.0,"cumpl":"Atrasado","desc":"Remover arboles","serviceType":"Final Homeowner Walkthrough","priority":"Medium","date2":"2026-04-14"},{"id":"1852225","date":"2026-01-20","month":"2026-01","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":23.0,"cumpl":"Cumplido","desc":"Se estÃ¡ disparando el bracket en varias ocasiones cuando hemos usado el microon","serviceType":"Service Call","priority":"Medium","date2":""},{"id":"1852226","date":"2026-01-20","month":"2026-01","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":23.0,"cumpl":"Cumplido","desc":"El sifÃ³n de la ducha estÃ¡ taponado, no baja el agua y se inunda y se demora va","serviceType":"Service Call","priority":"Medium","date2":""},{"id":"1852227","date":"2026-01-20","month":"2026-01","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":23.0,"cumpl":"Cumplido","desc":"No estÃ¡ saliendo agua de la nevera Y no genera hielo","serviceType":"Service Call","priority":"Medium","date2":""},{"id":"1854146","date":"2026-01-22","month":"2026-01","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":21.0,"cumpl":"Cumplido","desc":"El dÃ­a de hoy de la nada, nadie estaba realizando uso ni de toilets ni de ducha","serviceType":"Service Call","priority":"Medium","date2":""},{"id":"1860383","date":"2026-02-02","month":"2026-02","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":16.0,"cumpl":"Cumplido","desc":"Drenaje","serviceType":"Final Homeowner Walkthrough","priority":"Medium","date2":""},{"id":"1860384","date":"2026-02-02","month":"2026-02","project":"Flagami Pines","status":"In-progress","coordinator":"Santiago Gardeazabal","res1":"","res2":"","res3":"","days":66.0,"cumpl":"Atrasado","desc":"Mover arboles","serviceType":"Final Homeowner Walkthrough","priority":"Medium","date2":"2026-04-14"},{"id":"1860385","date":"2026-02-02","month":"2026-02","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":28.0,"cumpl":"Cumplido","desc":"Cambiar broche de puerta y nivelar cierre","serviceType":"Final Homeowner Walkthrough","priority":"Medium","date2":"2026-03-06"},{"id":"1860386","date":"2026-02-02","month":"2026-02","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":10.0,"cumpl":"Cumplido","desc":"Revisar piezas sueltas y baseboard","serviceType":"Final Homeowner Walkthrough","priority":"Medium","date2":""},{"id":"1860420","date":"2026-02-02","month":"2026-02","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":10.0,"cumpl":"Cumplido","desc":"Finish mueble de cocina","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1860421","date":"2026-02-02","month":"2026-02","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":16.0,"cumpl":"Cumplido","desc":"Pintura amarilla en las puertas // revisar puertas de todas las habitaciones y c","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1860422","date":"2026-02-02","month":"2026-02","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"No Cumplió","res3":"Cumplió","days":43.0,"cumpl":"Cumplido","desc":"Revisar cierre de pocket door","serviceType":"Construction Review","priority":"Medium","date2":"2026-03-06"},{"id":"1860423","date":"2026-02-02","month":"2026-02","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":21.0,"cumpl":"Cumplido","desc":"Reparar concreto fisurado","serviceType":"Construction Review","priority":"Medium","date2":"2026-02-23"},{"id":"1861303","date":"2026-02-03","month":"2026-02","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":13.0,"cumpl":"Cumplido","desc":"Delivery Condition","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1861304","date":"2026-02-03","month":"2026-02","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":13.0,"cumpl":"Cumplido","desc":"Delivery Condition","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1861305","date":"2026-02-03","month":"2026-02","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":13.0,"cumpl":"Cumplido","desc":"Delivery Condition","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1861306","date":"2026-02-03","month":"2026-02","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":13.0,"cumpl":"Cumplido","desc":"Delivery Condition","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1861307","date":"2026-02-03","month":"2026-02","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":13.0,"cumpl":"Cumplido","desc":"Delivery Condition Washer and Dryer","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1861308","date":"2026-02-03","month":"2026-02","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":13.0,"cumpl":"Cumplido","desc":"Delivery Condition","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1861309","date":"2026-02-03","month":"2026-02","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":13.0,"cumpl":"Cumplido","desc":"Delivery Condition","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1861310","date":"2026-02-03","month":"2026-02","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":13.0,"cumpl":"Cumplido","desc":"Delivery Condition","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1861311","date":"2026-02-03","month":"2026-02","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":13.0,"cumpl":"Cumplido","desc":"Delivery condition","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815555","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Finish pendiente","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815568","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Finish","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815602","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Pelicula","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815753","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Acabados ventana","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815754","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Piedra faltante de pared","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815755","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Acabados landscaping","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815756","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Revisar finish","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815757","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Landscaping","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815758","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Revisar manija","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815759","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Puerta no cierra","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815760","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"No funcionan las tomas electricas","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815761","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Finish pared huecos","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815762","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Finish y limpieza","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815763","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Luces no prenden","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815764","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Revisar acabado de puerta","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815765","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"No prende luz","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815766","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Finish outlet","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815767","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Limpieza de vidrio y finish","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815768","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Finish","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815769","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Acabados de ventans exteriores","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815770","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Ver opciones de pintura","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815771","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Finish","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815772","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Finalizar pintura","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815773","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Revisar finish","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815774","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"El acabado no es optimo. Esta ondulado","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815775","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Limpiar tile","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815776","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Under cabinet","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815777","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Revisar acabados de pared","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815778","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Accesorios baÃ±o","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815779","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Outlets finish","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815780","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Accesorios de baÃ±o","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815781","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Espejo","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815782","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Finishes","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815783","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Finishes","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815784","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Tope puerta","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815785","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Finish","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815786","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Finish closet","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815787","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Lavadora revisar conexiones no prende","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815788","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Limpieza","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815789","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Accesorios de baÃ±o","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815790","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Acabado en el piso","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815791","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Finish en duchas","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815792","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Pieza metalica deberia subir completamente","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815793","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"No funciona","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815797","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Finish","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815799","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Finish","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815800","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Revisar bordes metalicos con pintura","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815801","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Centrar lampara con faucet","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815802","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Under cabinet revisar finish","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815803","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Finish tomas electricas","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815805","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Definir finish","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815806","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Esta torcido","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815807","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Finish","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815808","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Finish","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815809","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Revisar finish toma electrica","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815810","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Revisar acabados","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815811","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Limpieza","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815812","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Revisar finishes","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815813","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"No sirve la toma/ revisar lapiz en el backsplash","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1815814","date":"2025-12-02","month":"2025-12","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":76.0,"cumpl":"Cumplido","desc":"Revisar finish del cable","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854555","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Finish del a/c","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854556","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Finish baseboard","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854557","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Finish baseboard","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854558","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Pintar pieza completa","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854559","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Limpieza","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854560","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Poner perfil de madera","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854561","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Limpieza","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854562","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Limpieza perfiles","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854563","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Revisar porque tiene agua","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854564","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Limpieza","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854565","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Grava","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854566","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Equipo remoto","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854567","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":28.0,"cumpl":"Cumplido","desc":"Definir jardinera","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854568","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Arreglar jardines incluir corte de pasto","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854569","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":28.0,"cumpl":"Cumplido","desc":"Cotizar dura fence","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854570","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Acabado de la tuberia","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854571","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Acabado de luces","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854572","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Aplicar molsch","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854581","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Revisar finish","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854582","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Revisar pintura tiene dos colores","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854583","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Limpieza","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854584","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Perfil de madera","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854585","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Perfil de madera","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854586","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Revisar pilas","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854587","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Garage: perfiles","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854588","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Garage: limpieza del piso con waterpolo pressure","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854589","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":28.0,"cumpl":"Cumplido","desc":"Molsch a todo el corredor y piedra alrededor del drenaje y limpieza","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854590","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Piedra alrededor del equipo de la piscina","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854591","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Jardin piscina: cortar pasto y arreglar jardineria","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854592","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Limpieza","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854593","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Ingreso puerta kimpieza y revisar si es viable perfil","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854594","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":28.0,"cumpl":"Cumplido","desc":"Cubrir salidas","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854595","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":28.0,"cumpl":"Cumplido","desc":"Instalar equipo de apertura automatica de puerta","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854596","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Rellenar driveway de grava","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854597","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Pintura tuberia dorado","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1854598","date":"2026-01-23","month":"2026-01","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":24.0,"cumpl":"Cumplido","desc":"Lanscaping y jardineria: corte de pasto y organizacion de jardin","serviceType":"Construction Review","priority":"Medium","date2":""},{"id":"1","date":"2026-02-12","month":"2026-02","project":"Gardens","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":1.0,"cumpl":"Cumplido","desc":"El homeowner indica que la estructura de la escalera ha empeorado con el tiempo ","serviceType":"","priority":"High","date2":""},{"id":"2","date":"2026-02-12","month":"2026-02","project":"Gardens","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":1.0,"cumpl":"Cumplido","desc":"Según el plano aprobado, la lavadora/secadora debe ir apilada contra la pared y ","serviceType":"","priority":"High","date2":""},{"id":"3","date":"2026-02-16","month":"2026-02","project":"Gardens","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":10.0,"cumpl":"Cumplido","desc":"La puerta del rooftop continúa presentando una luz (espacio) en el cierre, permi","serviceType":"","priority":"High","date2":"2026-02-26"},{"id":"4","date":"2026-02-16","month":"2026-02","project":"Gardens","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"No Cumplió","res3":"No Cumplió","days":108.0,"cumpl":"Cumplido","desc":"Existen dos tablas de piso sueltas. En la visita de Prosein menciona que ya no t","serviceType":"","priority":"High","date2":"2026-03-18"},{"id":"5","date":"2026-02-16","month":"2026-02","project":"Gardens","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":10.0,"cumpl":"Cumplido","desc":"Los tomacorrientes del rooftop no están funcionando. Se requiere visita de elect","serviceType":"","priority":"High","date2":"2026-02-26"},{"id":"6","date":"2026-02-16","month":"2026-02","project":"Gardens","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"No Cumplió","res3":"Cumplió","days":16.0,"cumpl":"Cumplido","desc":"Se evidencia una grieta en el vano de la puerta del rooftop. La fisura recorre e","serviceType":"","priority":"High","date2":"2026-02-23"},{"id":"7","date":"2026-02-16","month":"2026-02","project":"Gardens","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":42.0,"cumpl":"En fabricación","desc":"Sugiere cambiar los gabinetes y solicita alineación de panel de la nevera","serviceType":"","priority":"High","date2":"2026-03-30"},{"id":"8","date":"2026-02-16","month":"2026-02","project":"Gardens","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":0.0,"cumpl":"Cumplido","desc":"Puerta está trabajada. Se intentó en dos ocasiones agendar con ES WINDOWS  pero ","serviceType":"","priority":"High","date2":""},{"id":"9","date":"2026-02-16","month":"2026-02","project":"Gardens","status":"In-progress","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":30.0,"cumpl":"DCR dará cierre a este ticket con el cliente.","desc":"All window insulation issues on upper level. ZERO ACOUSTIC INSULATION \nZERO THER","serviceType":"","priority":"High","date2":"2026-03-18"},{"id":"10","date":"2026-02-16","month":"2026-02","project":"Gardens","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":25.0,"cumpl":"Cumplido","desc":"Humedad techo Jack & Jill Bathroom","serviceType":"","priority":"High","date2":"2026-03-16"},{"id":"11","date":"2026-02-16","month":"2026-02","project":"Gardens","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"No Cumplió","res3":"Cumplió","days":24.0,"cumpl":"Cumplido","desc":"Falta caulking en toilet baño guess room","serviceType":"","priority":"Medium","date2":"2026-03-06"},{"id":"12","date":"2026-02-16","month":"2026-02","project":"Gardens","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"No Cumplió","res3":"Cumplió","days":51.0,"cumpl":"Cumplido","desc":"Master bathroom: La solución temporal del perfil acrilico  que contenia agua pro","serviceType":"","priority":"Medium","date2":"2026-03-16"},{"id":"407929","date":"2026-02-20","month":"2026-02","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":7.0,"cumpl":"Cumplido","desc":"Limpieza general. Outlets, puertas ventanas","serviceType":"Construction Review","priority":"Low","date2":"2026-02-27"},{"id":"407928","date":"2026-02-20","month":"2026-02","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":7.0,"cumpl":"Cumplido","desc":"Luz fundida","serviceType":"Construction Review","priority":"Low","date2":"2026-02-27"},{"id":"407927","date":"2026-02-20","month":"2026-02","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":7.0,"cumpl":"Cumplido","desc":"Finish marco puerta","serviceType":"Construction Review","priority":"Low","date2":"2026-02-27"},{"id":"407926","date":"2026-02-20","month":"2026-02","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":7.0,"cumpl":"Cumplido","desc":"Finish lampara","serviceType":"Construction Review","priority":"Low","date2":"2026-02-27"},{"id":"407925","date":"2026-02-20","month":"2026-02","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":7.0,"cumpl":"Cumplido","desc":"Finish pintura","serviceType":"Construction Review","priority":"Low","date2":"2026-02-27"},{"id":"407924","date":"2026-02-20","month":"2026-02","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":7.0,"cumpl":"Cumplido","desc":"Finish lampara","serviceType":"Construction Review","priority":"Low","date2":"2026-02-27"},{"id":"407923","date":"2026-02-20","month":"2026-02","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":7.0,"cumpl":"Cumplido","desc":"Marco puerta garage","serviceType":"Construction Review","priority":"Low","date2":"2026-02-27"},{"id":"407922","date":"2026-02-20","month":"2026-02","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":7.0,"cumpl":"Cumplido","desc":"Acabado pasto","serviceType":"Construction Review","priority":"Low","date2":"2026-02-27"},{"id":"407921","date":"2026-02-20","month":"2026-02","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":7.0,"cumpl":"Cumplido","desc":"Caja metalica","serviceType":"Construction Review","priority":"Low","date2":"2026-02-27"},{"id":"407920","date":"2026-02-20","month":"2026-02","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":7.0,"cumpl":"Cumplido","desc":"Pintar backflow","serviceType":"Construction Review","priority":"Low","date2":"2026-02-27"},{"id":"407919","date":"2026-02-20","month":"2026-02","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":7.0,"cumpl":"Cumplido","desc":"Mailbox","serviceType":"Construction Review","priority":"Low","date2":"2026-02-27"},{"id":"408198","date":"2026-02-24","month":"2026-02","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":3.0,"cumpl":"Cumplido","desc":"Summer kitchen finalizar instalacion","serviceType":"Construction Review","priority":"Low","date2":"2026-02-27"},{"id":"408197","date":"2026-02-24","month":"2026-02","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":3.0,"cumpl":"Cumplido","desc":"Cleaning","serviceType":"Construction Review","priority":"Low","date2":"2026-02-27"},{"id":"408196","date":"2026-02-24","month":"2026-02","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":3.0,"cumpl":"Cumplido","desc":"Marco","serviceType":"Construction Review","priority":"Low","date2":"2026-02-27"},{"id":"408195","date":"2026-02-24","month":"2026-02","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":3.0,"cumpl":"Cumplido","desc":"Finish","serviceType":"Construction Review","priority":"Low","date2":"2026-02-27"},{"id":"408194","date":"2026-02-24","month":"2026-02","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":3.0,"cumpl":"Cumplido","desc":"Finish","serviceType":"Construction Review","priority":"Low","date2":"2026-02-27"},{"id":"408193","date":"2026-02-24","month":"2026-02","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":3.0,"cumpl":"Cumplido","desc":"Finish","serviceType":"Construction Review","priority":"Low","date2":"2026-02-27"},{"id":"408192","date":"2026-02-24","month":"2026-02","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":3.0,"cumpl":"Cumplido","desc":"Accesorio","serviceType":"Construction Review","priority":"Low","date2":"2026-02-27"},{"id":"408191","date":"2026-02-24","month":"2026-02","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":3.0,"cumpl":"Cumplido","desc":"Finish","serviceType":"Construction Review","priority":"Low","date2":"2026-02-27"},{"id":"408190","date":"2026-02-24","month":"2026-02","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":3.0,"cumpl":"Cumplido","desc":"Remover","serviceType":"Construction Review","priority":"Low","date2":"2026-02-27"},{"id":"408189","date":"2026-02-24","month":"2026-02","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":3.0,"cumpl":"Cumplido","desc":"Pintar","serviceType":"Construction Review","priority":"Low","date2":"2026-02-27"},{"id":"408188","date":"2026-02-24","month":"2026-02","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":3.0,"cumpl":"Cumplido","desc":"Caja metalica","serviceType":"Construction Review","priority":"Low","date2":"2026-02-27"},{"id":"408187","date":"2026-02-24","month":"2026-02","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"No Cumplió","res3":"Cumplió","days":36.0,"cumpl":"Cumplido","desc":"Setup jacuzzi y nivelacion","serviceType":"Construction Review","priority":"Low","date2":"2026-03-05"},{"id":"408186","date":"2026-02-24","month":"2026-02","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"No Cumplió","res3":"Cumplió","days":16.0,"cumpl":"Cumplido","desc":"Mailbox","serviceType":"Construction Review","priority":"Low","date2":"2026-02-27"},{"id":"13","date":"2026-03-01","month":"2026-03","project":"Gardens","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":11.0,"cumpl":"Cumplido","desc":"Leak zona escalera-hall segundo piso","serviceType":"","priority":"High","date2":"2026-03-12"},{"id":"14","date":"2026-03-12","month":"2026-03","project":"Gardens","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":4.0,"cumpl":"Cumplido","desc":"La puerta del rooftop presentauna luz (espacio) en el cierre, permitiendo el ing","serviceType":"","priority":"High","date2":""},{"id":"15","date":"2026-03-14","month":"2026-03","project":"Gardens","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":11.0,"cumpl":"Cumplido","desc":"Presencia de moho","serviceType":"","priority":"High","date2":""},{"id":"16","date":"2026-03-15","month":"2026-03","project":"Gardens","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":5.0,"cumpl":"Cumplido","desc":"La puerta del rooftop presenta filtración de agua","serviceType":"","priority":"High","date2":"2026-03-20"},{"id":"409479","date":"2026-03-15","month":"2026-03","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":3.0,"cumpl":"Cumplido","desc":"No tenemos agua caliente en ninguna parte de la casa desde hace 1 semana , ni du","serviceType":"","priority":"Low","date2":"2026-03-20"},{"id":"409478","date":"2026-03-15","month":"2026-03","project":"Flagami Pines","status":"In-progress","coordinator":"Santiago Gardeazabal","res1":"","res2":"","res3":"","days":25.0,"cumpl":"Atrasado","desc":"Solicito remover los arboles que quedaron pendientes en patio y fuera de la casa","serviceType":"","priority":"Low","date2":"2026-04-14"},{"id":"1891909","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Finish pared marco puerta","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891910","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Limpieza Ventanas","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891911","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Pintura en tono diferente","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891912","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Crack","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891913","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Limpieza Interruptor de luz","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891914","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Crack","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891915","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Limpieza Ventanas","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891916","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Limpieza Ventanas","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891917","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Finish muro rendondo","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891918","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Caulking","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891919","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Acabado puerta","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891920","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Recoger mangueras","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891921","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"In-progress","coordinator":"Santiago Gardeazabal","res1":"","res2":"","res3":"","days":23.0,"cumpl":"Atrasado","desc":"Finish piedra","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891922","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Finish Jacuzzi: Nivelacion","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891955","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Finish handdlerail","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891956","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Finish Pared","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891957","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Finish puerta","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891958","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Pintura","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891959","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Hab cerca a la escalers: pintura finish","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891960","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Enderezar interrumptores de luz","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891961","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Humedad","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891962","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Limpieza Slidding doors","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891963","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Finish","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891964","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Resolver finish slidding door","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891965","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Finish ventanas interiores","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891966","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Pared ovalada","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891967","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Finish","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891968","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Finish laterales garage","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891969","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Pegante en el vidrio","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"1891970","date":"2026-03-17","month":"2026-03","project":"Vista to the Plaza","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":15.0,"cumpl":"Cumplido","desc":"Limpieza Ventana","serviceType":"Construction Review","priority":"Low","date2":"2026-04-10"},{"id":"17","date":"2026-02-16","month":"2026-02","project":"Gardens","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":37.0,"cumpl":"Cumplido","desc":"Green Cap Replacement (Driveway)","serviceType":"","priority":"High","date2":"2026-03-25"},{"id":"18","date":"2026-03-17","month":"2026-03","project":"Gardens","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"Cumplió","res3":"","days":6.0,"cumpl":"Cumplido","desc":"Painting Around the Rooftop Door Frame","serviceType":"","priority":"High","date2":"2026-03-23"},{"id":"1893188","date":"2026-03-17","month":"2026-03","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"No Cumplió","res2":"No Cumplió","res3":"Cumplió","days":16.0,"cumpl":"Cumplido","desc":"Desague de la ducha del baño principal se sigue tapando con facilidad es el unic","serviceType":"","priority":"Low","date2":"2026-03-31"},{"id":"19","date":"2026-03-30","month":"2026-03","project":"Flagami Pines","status":"Completed","coordinator":"Santiago Gardeazabal","res1":"Cumplió","res2":"","res3":"","days":1.0,"cumpl":"Cumplido","desc":"Pintar Fence","serviceType":"","priority":"Low","date2":""},{"id":"20","date":"2026-04-07","month":"2026-04","project":"Sovereign Homes","status":"In-progress","coordinator":"Camilo Pinzon","res1":"","res2":"","res3":"","days":2.0,"cumpl":"A tiempo","desc":"Two pantry shelves fell last night. The shelves themselves are intact, but the s","serviceType":"","priority":"Low","date2":""},{"id":"21","date":"2026-04-08","month":"2026-04","project":"Gardens","status":"In-progress","coordinator":"Santiago Gardeazabal","res1":"","res2":"","res3":"","days":1.0,"cumpl":"A tiempo","desc":"Water Intrusion - El propietario informa que  después de las lluvias recientes, ","serviceType":"","priority":"High","date2":""},{"id":"22","date":"2026-04-07","month":"2026-04","project":"Gardens","status":"In-progress","coordinator":"Santiago Gardeazabal","res1":"","res2":"","res3":"","days":2.0,"cumpl":"A tiempo","desc":"Leak from the roof top in the Parti Wall cavity in our powder room. There's been","serviceType":"","priority":"High","date2":""}];
+
+// ── PROJECT COLORS ─────────────────────────────────────────────────
+var PROJ_COLORS = {"Flagami Pines": "#1a6cf6", "Vista to the Plaza": "#6aaeff", "Gardens": "#b3d4ff", "Sovereign Homes": "#a78bfa"};
+var EXTRA_COLORS = ['#f472b6','#34d399','#fb923c','#a3e635'];
+function projColor(name) {
+  if (PROJ_COLORS[name]) return PROJ_COLORS[name];
+  var keys = Object.keys(PROJ_COLORS);
+  var idx = keys.length % EXTRA_COLORS.length;
+  PROJ_COLORS[name] = EXTRA_COLORS[idx];
+  return PROJ_COLORS[name];
+}
+
+// ── STATE ──────────────────────────────────────────────────────────
+var STATE = { project:'all', status:'all', coordinator:'all', month:'all', view:'overview', sortCol:'days', sortDir:'desc' };
+
+// ── DYNAMIC LISTS ─────────────────────────────────────────────────
+var ALL_PROJECTS = [...new Set(RAW_DATA.map(function(r){return r.project;}).filter(Boolean))].sort();
+var ALL_COORDS   = [...new Set(RAW_DATA.map(function(r){return r.coordinator;}).filter(Boolean))].sort();
+var ALL_MONTHS   = [...new Set(RAW_DATA.map(function(r){return r.month;}).filter(Boolean))].sort();
+
+// ── FILTER ────────────────────────────────────────────────────────
+function getFiltered() {
+  return RAW_DATA.filter(function(r) {
+    if (STATE.project     !== 'all' && r.project     !== STATE.project)     return false;
+    if (STATE.month       !== 'all' && r.month       !== STATE.month)       return false;
+    if (STATE.coordinator !== 'all' && r.coordinator !== STATE.coordinator) return false;
+    if (STATE.view === 'tickets') {
+      return r.status === 'In-progress';
+    } else {
+      if (STATE.status !== 'all' && r.status !== STATE.status) return false;
+    }
+    return true;
+  });
+}
+
+// ── DERIVE METRICS ────────────────────────────────────────────────
+function deriveMetrics(rows) {
+  var total=rows.length, completed=0, open=0, cumplidos=0, atrasados=0;
+  var int1n=0, int2n=0, int3n=0, closedDays=[];
+  var monthMap={}, projMap={}, coordMap={};
+
+  rows.forEach(function(r) {
+    if (r.status==='Completed') completed++;
+    if (r.status==='In-progress') open++;
+    if (r.cumpl==='Cumplido') cumplidos++;
+    if (r.cumpl==='Atrasado') atrasados++;
+    if (r.res1==='Cumplió') int1n++;
+    if (r.res2&&r.res2.trim()) int2n++;
+    if (r.res3&&r.res3.trim()) int3n++;
+    if (r.status==='Completed'&&r.days>0) closedDays.push(r.days);
+    if (r.month) monthMap[r.month]=(monthMap[r.month]||0)+1;
+    if (!projMap[r.project]) projMap[r.project]={total:0,comp:0,open:0,days:[]};
+    projMap[r.project].total++;
+    if (r.cumpl==='Cumplido') projMap[r.project].comp++;
+    if (r.status==='In-progress') projMap[r.project].open++;
+    if (r.status==='Completed'&&r.days>0) projMap[r.project].days.push(r.days);
+    var c=r.coordinator||'Sin asignar';
+    if (!coordMap[c]) coordMap[c]={total:0,comp:0,open:0,days:[]};
+    coordMap[c].total++;
+    if (r.cumpl==='Cumplido') coordMap[c].comp++;
+    if (r.status==='In-progress') coordMap[c].open++;
+    if (r.status==='Completed'&&r.days>0) coordMap[c].days.push(r.days);
+  });
+
+  var avgDays=closedDays.length?closedDays.reduce(function(a,b){return a+b},0)/closedDays.length:0;
+  var compliance=total?cumplidos/total*100:0;
+
+  var projects=ALL_PROJECTS.map(function(n) {
+    var v=projMap[n]||{total:0,comp:0,open:0,days:[]};
+    var ad=v.days.length?v.days.reduce(function(a,b){return a+b},0)/v.days.length:0;
+    return{name:n,total:v.total,comp:v.comp,open:v.open,pct:v.total?v.comp/v.total*100:0,avgDays:ad,color:projColor(n)};
+  }).filter(function(p){return p.total>0;});
+
+  // Coordinators — dynamic, from actual data in filter
+  var coordinators=Object.keys(coordMap).sort().map(function(n) {
+    var v=coordMap[n];
+    var ad=v.days.length?v.days.reduce(function(a,b){return a+b},0)/v.days.length:0;
+    return{name:n,total:v.total,comp:v.comp,open:v.open,pct:v.total?v.comp/v.total*100:0,avgDays:ad};
+  });
+
+  var sortedMonths=ALL_MONTHS.filter(function(m){return monthMap[m]>0||STATE.month==='all';});
+  if(STATE.month!=='all') sortedMonths=[STATE.month];
+  var availableMonths=Object.keys(monthMap).sort();
+
+  var monthData={};
+  ALL_PROJECTS.forEach(function(p){monthData[p]={};availableMonths.forEach(function(m){monthData[p][m]=0;});});
+  rows.forEach(function(r){
+    if(r.month&&monthData[r.project]) monthData[r.project][r.month]=(monthData[r.project][r.month]||0)+1;
+  });
+
+  var monthLabelMap={'2025-12':'Dic 25','2026-01':'Ene 26','2026-02':'Feb 26','2026-03':'Mar 26','2026-04':'Abr 26','2026-05':'May 26'};
+  var monthLabels=availableMonths.map(function(k){return monthLabelMap[k]||k;});
+
+  var tableRows=rows.filter(function(r){return r.status==='In-progress';})
+    .slice().sort(function(a,b){
+      return STATE.sortDir==='asc'?a[STATE.sortCol]-b[STATE.sortCol]:b[STATE.sortCol]-a[STATE.sortCol];
+    });
+
+  var prevCompliance=RAW_DATA.filter(function(r){return r.cumpl==='Cumplido';}).length/RAW_DATA.length*100;
+
+  return{total,completed,open,cumplidos,atrasados,
+    onTime:total?int1n/total*100:0,toInt2:total?int2n/total*100:0,toInt3:total?int3n/total*100:0,
+    int1n,int2n,int3n,avgDays,compliance,projects,coordinators,
+    availableMonths,monthLabels,monthData,tableRows,
+    filteredCount:rows.length,prevTotal:RAW_DATA.length,prevCompliance};
+}
+
+// ── CHARTS ────────────────────────────────────────────────────────
+var barInst=null, donutInst=null;
+
+function updateBar(m) {
+  var activeProjs=ALL_PROJECTS.filter(function(p){return m.projects.some(function(pp){return pp.name===p;});});
+  var datasets=activeProjs.map(function(p){
+    return{label:p,data:m.availableMonths.map(function(mo){return(m.monthData[p]&&m.monthData[p][mo])||0;}),
+      backgroundColor:projColor(p),borderRadius:4,borderSkipped:false};
+  });
+  if(barInst){barInst.data.labels=m.monthLabels;barInst.data.datasets=datasets;barInst.update('active');}
+  else{
+    barInst=new Chart(document.getElementById('barChart').getContext('2d'),{
+      type:'bar',data:{labels:m.monthLabels,datasets:datasets},
+      options:{responsive:true,maintainAspectRatio:false,animation:{duration:500},
+        plugins:{legend:{position:'bottom',labels:{boxWidth:10,boxHeight:10,font:{size:10,family:"'Plus Jakarta Sans',sans-serif"},color:'#5a6a8a',padding:12}},
+          tooltip:{callbacks:{label:function(c){return ' '+c.dataset.label+': '+c.raw;}}}},
+        scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:10,family:"'Plus Jakarta Sans',sans-serif"},color:'#8fa3c8'}},
+          y:{stacked:true,grid:{color:'#f0f4fc',lineWidth:1},border:{display:false},ticks:{font:{size:10,family:"'Plus Jakarta Sans',sans-serif"},color:'#8fa3c8'}}}}
+    });
+  }
+}
+
+function updateDonut(m) {
+  var projs=m.projects.filter(function(p){return p.total>0;});
+  var labels=projs.map(function(p){return p.name.split(' ').slice(0,2).join(' ');});
+  var data=projs.map(function(p){return parseFloat(p.pct.toFixed(1));});
+  var colors=projs.map(function(p){return p.color;});
+  if(donutInst){donutInst.data.labels=labels;donutInst.data.datasets[0].data=data;donutInst.data.datasets[0].backgroundColor=colors;donutInst.update('active');}
+  else{
+    donutInst=new Chart(document.getElementById('donutChart').getContext('2d'),{
+      type:'doughnut',data:{labels:labels,datasets:[{data:data,backgroundColor:colors,borderWidth:0,hoverOffset:6}]},
+      options:{responsive:true,maintainAspectRatio:false,animation:{duration:500},cutout:'68%',
+        plugins:{legend:{position:'bottom',labels:{boxWidth:9,font:{size:10,family:"'Plus Jakarta Sans',sans-serif"},color:'#5a6a8a',padding:9}},
+          tooltip:{callbacks:{label:function(c){return ' '+c.label+': '+c.raw+'%';}}}}}
+    });
+  }
+}
+
+// ── COUNT-UP ──────────────────────────────────────────────────────
+function countUp(el,target,suf,delay){
+  suf=suf||'';delay=delay||0;var cur=0,step=target/(700/16);
+  setTimeout(function(){var t=setInterval(function(){cur+=step;if(cur>=target){cur=target;clearInterval(t);}
+    el.textContent=(Number.isInteger(target)?Math.round(cur):cur.toFixed(1))+suf;},16);},delay);
+}
+
+// ── RENDER KPIs ───────────────────────────────────────────────────
+function renderKPIs(m) {
+  var diffComp=m.compliance-m.prevCompliance, diffDays=m.avgDays-36.3;
+  var kpis=[
+    {ic:'🎫',bg:'linear-gradient(135deg,#dbeafe,#bfdbfe)',lbl:'Total Tickets',val:m.total,suf:'',
+      ctx:m.completed+' completados · '+m.open+' abiertos',
+      delta:m.filteredCount===m.prevTotal?'Todos los registros':m.filteredCount+' de '+m.prevTotal,dc:'dne',bar:m.total/m.prevTotal*100},
+    {ic:'✅',bg:'linear-gradient(135deg,#dcfce7,#bbf7d0)',lbl:'Completados',val:m.completed,suf:'',
+      ctx:m.completed+' de '+m.total+' tickets',
+      delta:(diffComp>=0?'+':'')+diffComp.toFixed(1)+'% vs global',dc:diffComp>=0?'dup':'ddn',bar:m.compliance},
+    {ic:'⏱️',bg:'linear-gradient(135deg,#fef3c7,#fde68a)',lbl:'Días Prom. Cierre',val:parseFloat(m.avgDays.toFixed(1)),suf:'',
+      ctx:'tickets completados',
+      delta:(diffDays>0?'+':'')+diffDays.toFixed(1)+' vs baseline',dc:diffDays<=0?'dup':'ddn',bar:Math.min(m.avgDays/80*100,100)},
+    {ic:'🔴',bg:'linear-gradient(135deg,#fee2e2,#fecaca)',lbl:'Tickets Abiertos',val:m.open,suf:'',
+      ctx:m.atrasados+' atrasados · '+m.coordinators.length+' coordinador'+(m.coordinators.length!==1?'es':''),
+      delta:(m.total>0?(m.open/m.total*100).toFixed(1):0)+'% del total',
+      dc:m.open===0?'dup':m.open>10?'ddn':'dne',bar:m.total>0?m.open/m.total*100:0}
+  ];
+  if(STATE.view==='projects'&&m.projects.length){
+    var best=m.projects.slice().sort(function(a,b){return b.pct-a.pct;})[0];
+    kpis[1].lbl='Mejor Proyecto';kpis[1].val=best.pct.toFixed(1);kpis[1].suf='%';kpis[1].ctx=best.name;
+  }
+  if(STATE.view==='coordinators'&&m.coordinators.length){
+    kpis[2].lbl='Coordinadores';kpis[2].val=m.coordinators.length;kpis[2].suf='';
+    kpis[2].ctx=m.coordinators.map(function(c){return c.name.split(' ')[0];}).join(' · ');
+  }
+  var el=document.getElementById('krow');
+  el.innerHTML=kpis.map(function(k,i){
+    return'<div class="kc" id="kc'+i+'">'+
+      '<div class="kc-ic" style="background:'+k.bg+'">'+k.ic+'</div>'+
+      '<div class="kc-lbl">'+k.lbl+'</div><div class="kc-val" id="kv'+i+'">—</div>'+
+      '<div class="kc-ctx">'+k.ctx+'</div><span class="kc-delta '+k.dc+'">'+k.delta+'</span>'+
+      '<div class="kc-bar-bg"><div class="kc-bar-f" id="kb'+i+'" style="width:0%"></div></div></div>';
+  }).join('');
+  kpis.forEach(function(k,i){
+    var card=document.getElementById('kc'+i);
+    setTimeout(function(){card.classList.add('rdy');},100+i*80);
+    countUp(document.getElementById('kv'+i),k.val,k.suf,150+i*80);
+    setTimeout(function(){var b=document.getElementById('kb'+i);if(b)b.style.width=Math.min(Math.round(k.bar),100)+'%';},300+i*80);
+  });
+}
+
+// ── RENDER PROGRESS ───────────────────────────────────────────────
+function renderProgress(m) {
+  var total=m.int1n+m.int2n+m.int3n;
+  var items=[
+    {nm:'Intento 1 (a tiempo)',n:m.int1n,pct:m.onTime,color:'#1a6cf6'},
+    {nm:'Intento 2 (escalado)',n:m.int2n,pct:m.toInt2,color:'#6aaeff'},
+    {nm:'Intento 3 (crítico)', n:m.int3n,pct:m.toInt3,color:'#b3d4ff'}
+  ];
+  document.getElementById('progList').innerHTML=items.map(function(it){
+    var p2=total>0?Math.round(it.n/total*100):0;
+    return'<div class="pl-row"><div class="pl-hd"><span class="pl-nm">'+it.nm+'</span><span class="pl-vl">'+it.n+' ('+it.pct.toFixed(1)+'%)</span></div>'+
+      '<div class="pb"><div class="pb-f" data-w="'+p2+'" style="background:'+it.color+'"></div></div></div>';
+  }).join('');
+  setTimeout(function(){document.querySelectorAll('.pb-f').forEach(function(f){f.style.width=f.dataset.w+'%';});},300);
+}
+
+// ── RENDER TABLE ──────────────────────────────────────────────────
+function renderTable(m) {
+  var rows=m.tableRows;
+  document.getElementById('tableTitle').textContent=STATE.view==='tickets'?'Todos los Tickets Abiertos':'Tickets Abiertos';
+  document.getElementById('tableCount').textContent=rows.length+' ticket'+(rows.length!==1?'s':'');
+  var tbody=document.getElementById('tableBody');
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:16px;color:var(--t3)">No hay tickets abiertos 🎉</td></tr>';return;}
+  tbody.innerHTML=rows.map(function(t){
+    var crit=t.days>60,med=t.days>30&&t.days<=60;
+    var pc=crit?'sr':med?'sa':'sg',pt=crit?'Crítico':med?'Atrasado':'Abierto';
+    var barColor=crit?'#ef4444':med?'#f59e0b':'#22c55e';
+    var pct=Math.min(100,Math.round(t.days/120*100));
+    var coordShort=(t.coordinator||'').split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
+    return'<tr class="'+(crit?'crit':'')+'">'+'<td style="font-size:9.5px;font-family:monospace;color:var(--t3)">'+t.id+'</td>'+
+      '<td style="font-size:10.5px;color:var(--t2);white-space:nowrap">'+t.project.split(' ').slice(0,2).join(' ')+'</td>'+
+      '<td><span title="'+t.coordinator+'" style="font-size:9.5px;font-weight:700;background:var(--blue-bg,#e6f0ff);color:var(--b1);padding:2px 6px;border-radius:8px">'+coordShort+'</span></td>'+
+      '<td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px">'+t.desc+'</td>'+
+      '<td style="text-align:center;font-weight:700;font-size:11px;color:'+(crit?'#ef4444':med?'#b45309':'var(--t1)')+'">'+t.days+'d</td>'+
+      '<td><span class="sp '+pc+'">'+pt+'</span></td>'+
+      '<td><div class="mb"><div class="mb-f" style="width:'+pct+'%;background:'+barColor+'"></div></div></td></tr>';
+  }).join('');
+}
+
+// ── RENDER SUMMARY ────────────────────────────────────────────────
+function renderSummary(m) {
+  var boxes=[
+    {cls:'sb2-g',val:m.onTime.toFixed(1)+'%',lbl:'A Tiempo (Intento 1)',sub:'↑ '+m.int1n+' tickets'},
+    {cls:'sb2-b',val:m.toInt2.toFixed(1)+'%',lbl:'Pasan a Intento 2',  sub:'→ '+m.int2n+' escalados'},
+    {cls:'sb2-a',val:m.toInt3.toFixed(1)+'%',lbl:'Pasan a Intento 3',  sub:'⚠ '+m.int3n+' críticos'},
+    {cls:'sb2-g',val:m.compliance.toFixed(1)+'%',lbl:'Cumplimiento',    sub:'↑ '+m.cumplidos+' cumplidos'}
+  ];
+  document.getElementById('summaryGrid').innerHTML=boxes.map(function(b){
+    return'<div class="sb2 '+b.cls+'"><div class="sbv">'+b.val+'</div><div class="sbl">'+b.lbl+'</div><div class="sbs">'+b.sub+'</div></div>';
+  }).join('');
+}
+
+// ── RENDER COORD VIEW ─────────────────────────────────────────────
+function renderCoordView(m) {
+  // Replace bottom-left table with coordinator cards when in coordinator view
+  var tc=document.getElementById('tcCard');
+  if(STATE.view==='coordinators') {
+    document.getElementById('tableTitle').textContent='Detalle por Coordinador';
+    document.getElementById('tableCount').textContent=m.coordinators.length+' coordinador'+(m.coordinators.length!==1?'es':'');
+    var colors=['#1a6cf6','#a78bfa','#34d399','#fb923c'];
+    document.getElementById('tableBody').innerHTML=m.coordinators.map(function(c,i){
+      var cumpPct=c.pct.toFixed(1);
+      var avgD=c.avgDays>0?c.avgDays.toFixed(1):'—';
+      var barW=Math.round(c.pct);
+      var ini=c.name.split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
+      return'<tr>'+
+        '<td><span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:'+colors[i%colors.length]+';color:#fff;font-size:11px;font-weight:800;">'+ini+'</span></td>'+
+        '<td style="font-weight:600;font-size:12px" colspan="2">'+c.name+'</td>'+
+        '<td style="font-size:11px;color:var(--t2)">'+c.total+' tickets</td>'+
+        '<td style="text-align:center;font-weight:700;color:'+(parseFloat(avgD)>45?'#ef4444':'var(--t1)')+'">'+avgD+'d</td>'+
+        '<td><span class="sp '+(c.pct>=80?'sg':c.pct>=60?'sa':'sr')+'">'+cumpPct+'%</span></td>'+
+        '<td><div class="mb" style="width:70px"><div class="mb-f" style="width:'+barW+'%;background:'+(c.pct>=80?'#22c55e':c.pct>=60?'#f59e0b':'#ef4444')+'"></div></div></td>'+
+      '</tr>';
+    }).join('');
+  }
+}
+
+// ── MASTER RENDER ─────────────────────────────────────────────────
+function renderAll() {
+  var filtered=getFiltered();
+  var m=deriveMetrics(filtered);
+  document.getElementById('recordCount').textContent=m.filteredCount+' registros';
+  renderKPIs(m);
+  updateBar(m);
+  updateDonut(m);
+  renderProgress(m);
+  if(STATE.view==='coordinators') renderCoordView(m);
+  else renderTable(m);
+  renderSummary(m);
+  document.getElementById('chartMainTitle').textContent={
+    overview:'Tickets por Mes y Proyecto',projects:'Distribución por Proyecto',
+    tickets:'Tickets Abiertos por Período',coordinators:'Tickets por Coordinador',trends:'Tendencia Mensual'
+  }[STATE.view]||'Tickets por Mes y Proyecto';
+  document.querySelectorAll('.cc').forEach(function(el){el.classList.add('rdy');});
+  calcHeights();
+}
+
+// ── LAYOUT ────────────────────────────────────────────────────────
+function calcHeights() {
+  var content=document.getElementById('content');
+  var krow=document.getElementById('krow');
+  var brow=document.getElementById('brow');
+  if(!content||!krow||!brow) return;
+  var ch=content.offsetHeight-krow.offsetHeight-brow.offsetHeight-10*3-24;
+  var crow=document.getElementById('crow');
+  if(crow) crow.style.height=Math.max(ch,110)+'px';
+}
+
+// ── SIDEBAR ───────────────────────────────────────────────────────
+var viewLabels={overview:'Resumen General',projects:'Por Proyecto',
+  tickets:'Tickets Abiertos',coordinators:'Coordinadores',trends:'Tendencias'};
+function switchView(view) {
+  STATE.view=view;
+  document.getElementById('viewLabel').textContent=viewLabels[view]||view;
+  document.querySelectorAll('.sb-item').forEach(function(el){el.classList.remove('act');});
+  var a=document.querySelector('[data-view="'+view+'"]'); if(a) a.classList.add('act');
+  var fStatus=document.getElementById('fStatus');
+  fStatus.disabled=view==='tickets';
+  renderAll();
+}
+
+// ── RAW MODAL ─────────────────────────────────────────────────────
+function openRawModal() {
+  var filtered=getFiltered();
+  document.getElementById('rawSub').textContent=filtered.length+' registros · filtro actual';
+  var cols=['id','date','project','coordinator','status','days','cumpl','res1','res2','res3','desc'];
+  var labels=['ID','Fecha','Proyecto','Coordinador','Estado','Días','Cumplimiento','Res.1','Res.2','Res.3','Descripción'];
+  var thead='<thead><tr>'+labels.map(function(l){return'<th>'+l+'</th>';}).join('')+'</tr></thead>';
+  var tbody='<tbody>'+filtered.map(function(r){
+    return'<tr>'+cols.map(function(c){
+      if(c==='status'){var pc=r[c]==='Completed'?'sg':'sr';return'<td><span class="pl '+pc+'">'+r[c]+'</span></td>';}
+      if(c==='cumpl'){var cc=r[c]==='Cumplido'?'sg':r[c]==='Atrasado'?'sr':'sa';return'<td><span class="pl '+cc+'">'+r[c]+'</span></td>';}
+      return'<td>'+String(r[c]||'').slice(0,40)+'</td>';
+    }).join('')+'</tr>';
+  }).join('')+'</tbody>';
+  document.getElementById('rawTable').innerHTML=thead+tbody;
+  document.getElementById('rawFoot').textContent=filtered.length+' registros · 9 de abril de 2026';
+  document.getElementById('raw-modal').classList.add('open');
+}
+
+// ── EVENTS ────────────────────────────────────────────────────────
+document.querySelector('.dt thead').addEventListener('click',function(e){
+  var th=e.target.closest('.sortable');if(!th)return;
+  var col=th.dataset.col;
+  if(STATE.sortCol===col)STATE.sortDir=STATE.sortDir==='asc'?'desc':'asc';
+  else{STATE.sortCol=col;STATE.sortDir='desc';}
+  document.querySelectorAll('.dt th').forEach(function(h){h.classList.remove('sort-asc','sort-desc');});
+  th.classList.add(STATE.sortDir==='asc'?'sort-asc':'sort-desc');
+  renderAll();
+});
+document.getElementById('mpills').addEventListener('click',function(e){
+  var p=e.target.closest('.mp');if(!p)return;
+  document.querySelectorAll('.mp').forEach(function(x){x.classList.remove('act');});
+  p.classList.add('act');STATE.month=p.dataset.m;renderAll();
+});
+document.getElementById('fProj').addEventListener('change',function(){STATE.project=this.value;renderAll();});
+document.getElementById('fStatus').addEventListener('change',function(){STATE.status=this.value;renderAll();});
+document.getElementById('fCoord').addEventListener('change',function(){STATE.coordinator=this.value;renderAll();});
+document.getElementById('clearBtn').addEventListener('click',function(){
+  STATE.project='all';STATE.status='all';STATE.coordinator='all';STATE.month='all';
+  ['fProj','fStatus','fCoord'].forEach(function(id){document.getElementById(id).value='all';});
+  document.querySelectorAll('.mp').forEach(function(p){p.classList.toggle('act',p.dataset.m==='all');});
+  renderAll();
+});
+document.getElementById('sbnav').addEventListener('click',function(e){
+  var item=e.target.closest('.sb-item');if(!item)return;
+  switchView(item.dataset.view);
+});
+document.getElementById('rawBtn').addEventListener('click',openRawModal);
+document.getElementById('rawClose').addEventListener('click',function(){document.getElementById('raw-modal').classList.remove('open');});
+document.getElementById('raw-modal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+window.addEventListener('resize',function(){calcHeights();if(barInst)barInst.resize();if(donutInst)donutInst.resize();});
+
+window.addEventListener('DOMContentLoaded',function(){
+  renderAll();
+  setTimeout(calcHeights,100);
+});
+</script>
+</body>
+</html>
